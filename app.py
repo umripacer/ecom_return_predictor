@@ -10,8 +10,8 @@ from github import Github # PyGithub
 # -----------------------------
 @st.cache_resource
 def load_artifacts():
-    base_path = os.path.dirname(**file**)
-    model = joblib.load(os.path.join(base_path, "xgb_model.pkl"))
+    base_path = os.path.dirname(__file__)
+    model = joblib.load(os.path.join(base_path, "xgb_model.pkl"))
     scaler = joblib.load(os.path.join(base_path, "scaler.pkl"))
     le_category = joblib.load(os.path.join(base_path, "le_category.pkl"))
     le_country = joblib.load(os.path.join(base_path, "le_country.pkl"))
@@ -205,3 +205,4 @@ st.markdown("""
     </p>
 """, unsafe_allow_html=True)
 st.caption("**Feedback Persistence**: Feedbacks are now directly saved to your GitHub repository using the GitHub API. New entries will appear in feedback.csv on GitHub and in the app after refresh.")
+
