@@ -10,10 +10,11 @@ import time
 # -----------------------------
 @st.cache_resource
 def load_artifacts():
-    model = joblib.load(r'D:\ecom_return_predictor\xgb_model.pkl')
-    scaler = joblib.load(r'D:\ecom_return_predictor\scaler.pkl')
-    le_category = joblib.load(r'D:\ecom_return_predictor\le_category.pkl')
-    le_country = joblib.load(r'D:\ecom_return_predictor\le_country.pkl')
+    base_path = os.path.dirname(__file__)  # folder of app.py
+    model = joblib.load(os.path.join(base_path, "xgb_model.pkl"))
+    scaler = joblib.load(os.path.join(base_path, "scaler.pkl"))
+    le_category = joblib.load(os.path.join(base_path, "le_category.pkl"))
+    le_country = joblib.load(os.path.join(base_path, "le_country.pkl"))
     return model, scaler, le_category, le_country
 
 model, scaler, le_category, le_country = load_artifacts()
@@ -33,7 +34,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # -----------------------------
-# Model Performance Metrics (From Your Training Results)
+# Model Performance Metrics (From Training Results)
 # -----------------------------
 MODEL_METRICS = {
     "Accuracy": "0.9245",
@@ -66,7 +67,7 @@ with col2:
 # Predict Button
 if st.button("🔍 Predict Return Chance", type="primary", use_container_width=True):
     with st.spinner("Analyzing order details and predicting risk..."):
-        time.sleep(1.5)  # Small delay for dramatic effect
+        time.sleep(1.5)  # Small delay for effect
 
         # Prepare input
         input_data = pd.DataFrame({
@@ -88,19 +89,14 @@ if st.button("🔍 Predict Return Chance", type="primary", use_container_width=T
     # Animated Result Reveal
     st.markdown("<br>", unsafe_allow_html=True)
     placeholder = st.empty()
-
     with placeholder.container():
         st.markdown(f"""
             <div style='text-align: center; padding: 30px; border-radius: 20px; 
                         background: linear-gradient(135deg, {'#FF5252' if return_probability > 0.05 else '#4CAF50'}, #ffffff);
                         box-shadow: 0 8px 20px rgba(0,0,0,0.15); color: white;'>
-                <h1 style='margin:0; font-size: 60px;'>
-                    {return_probability:.1%}
-                </h1>
+                <h1 style='margin:0; font-size: 60px;'>{return_probability:.1%}</h1>
                 <h3 style='margin:5px 0;'>Probability of Return</h3>
-                <h2 style='margin:10px 0; color: {'#FFEB3B' if return_probability > 0.05 else '#FFFFFF'};'>
-                    {prediction}
-                </h2>
+                <h2 style='margin:10px 0; color: {'#FFEB3B' if return_probability > 0.05 else '#FFFFFF'};'>{prediction}</h2>
             </div>
         """, unsafe_allow_html=True)
 
@@ -127,7 +123,7 @@ if st.button("🔍 Predict Return Chance", type="primary", use_container_width=T
     colm4.metric("AUC Score", MODEL_METRICS["AUC Score"])
 
 # -----------------------------
-# Feedback Form (Assignment-Compliant Headers)
+# Feedback Form
 # -----------------------------
 st.markdown("<br><hr style='border-top: 3px dashed #1E88E5;'>", unsafe_allow_html=True)
 st.markdown("<h2 style='text-align: center; color: #1E88E5;'>📝 Give Your Feedback</h2>", unsafe_allow_html=True)
@@ -135,7 +131,6 @@ st.write("Your feedback helps improve the model and user experience!")
 
 with st.form(key="feedback_form", clear_on_submit=True):
     name = st.text_input("Your Name *", placeholder="e.g., Umar Farooq")
-
     colf1, colf2 = st.columns(2)
     with colf1:
         usability_rating = st.slider("Usability of the App (1 = Poor, 5 = Excellent)", 1, 5, 4)
@@ -144,7 +139,6 @@ with st.form(key="feedback_form", clear_on_submit=True):
 
     suggestions = st.text_area("Suggestions for Improvement", 
                                placeholder="e.g., Add product images, allow bulk upload, show explanations, etc.")
-
     submitted = st.form_submit_button("🚀 Submit Feedback", type="primary", use_container_width=True)
 
     if submitted:
@@ -158,8 +152,9 @@ with st.form(key="feedback_form", clear_on_submit=True):
                 "Suggestions": suggestions,
                 "Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             }])
-
-            csv_path = r'D:\ecom_return_predictor\feedback.csv'
+            
+            # Use relative path for feedback.csv
+            csv_path = os.path.join(os.path.dirname(__file__), "feedback.csv")
             if os.path.exists(csv_path):
                 df_existing = pd.read_csv(csv_path)
                 df_updated = pd.concat([df_existing, feedback_entry], ignore_index=True)
