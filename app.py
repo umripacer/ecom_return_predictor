@@ -125,7 +125,7 @@ MODEL_METRICS = {
 # -----------------------------
 # Prediction Section
 # -----------------------------
-st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
+st.markdown("<div class='glass-card'> 📦 Enter Product & Order Details </div>", unsafe_allow_html=True)
 st.header("📦 Enter Product & Order Details")
 
 col1, col2 = st.columns(2)
@@ -339,9 +339,7 @@ st.markdown("""
             Model: XGBoost Classifier | Dataset: Online Retail (UCI/Kaggle)<br>
             Deployment: Streamlit Cloud | Version 1.0 — December 2025
         </p>
-        <p style='color: #64748b; font-size: 13px; margin-top: 15px;'>
-            **Feedback Persistence**: Feedbacks are saved directly to GitHub. Table updates instantly after submission!
-        </p>
     </div>
 """, unsafe_allow_html=True)
+
 
