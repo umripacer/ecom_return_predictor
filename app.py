@@ -4,13 +4,14 @@ import joblib
 import os
 from datetime import datetime
 import time
+from github import Github  # PyGithub
 
 # -----------------------------
 # Load Model & Preprocessors
 # -----------------------------
 @st.cache_resource
 def load_artifacts():
-    base_path = os.path.dirname(__file__)  # folder of app.py
+    base_path = os.path.dirname(__file__)
     model = joblib.load(os.path.join(base_path, "xgb_model.pkl"))
     scaler = joblib.load(os.path.join(base_path, "scaler.pkl"))
     le_category = joblib.load(os.path.join(base_path, "le_category.pkl"))
@@ -35,7 +36,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # -----------------------------
-# Model Performance Metrics (From Training Results)
+# Model Performance Metrics
 # -----------------------------
 MODEL_METRICS = {
     "Accuracy": "0.9245",
@@ -63,11 +64,9 @@ with col2:
     is_holiday = st.checkbox("Holiday Season (Nov-Dec)", value=False)
     is_weekend = st.checkbox("Weekend Order", value=False)
 
-# Predict Button
 if st.button("🔍 Predict Return Chance", type="primary", use_container_width=True):
     with st.spinner("Analyzing order details and predicting risk..."):
-        time.sleep(1.5)  # Small delay for effect
-        # Prepare input
+        time.sleep(1.5)
         input_data = pd.DataFrame({
             'UnitPrice': [unit_price],
             'TotalPrice': [total_price],
@@ -83,7 +82,6 @@ if st.button("🔍 Predict Return Chance", type="primary", use_container_width=T
         return_probability = model.predict_proba(scaled_input)[0][1]
         prediction = "Return Likely" if return_probability > 0.05 else "Return Unlikely"
 
-    # Animated Result Reveal
     st.markdown("<br>", unsafe_allow_html=True)
     placeholder = st.empty()
     with placeholder.container():
@@ -97,7 +95,6 @@ if st.button("🔍 Predict Return Chance", type="primary", use_container_width=T
             </div>
         """, unsafe_allow_html=True)
 
-    # Celebration Animation
     if return_probability <= 0.05:
         st.success("🎉 Low Risk! This order is likely to be kept.")
         st.balloons()
@@ -105,13 +102,11 @@ if st.button("🔍 Predict Return Chance", type="primary", use_container_width=T
         st.error("⚠️ High Risk! This order may be returned.")
         st.snow()
 
-    # Recommendations
     if return_probability > 0.05:
         st.warning("**Recommendation**: Enhance product photos, detailed sizing charts, or clear material description for this category.")
     else:
         st.success("**Great choice!** High customer satisfaction expected.")
 
-    # Show Model Performance
     st.markdown("<br><h4 style='text-align: center;'>🔬 Model Performance Metrics (Test Set)</h4>", unsafe_allow_html=True)
     colm1, colm2, colm3, colm4 = st.columns(4)
     colm1.metric("Accuracy", MODEL_METRICS["Accuracy"])
@@ -141,25 +136,57 @@ with st.form(key="feedback_form", clear_on_submit=True):
         if not name.strip():
             st.error("⚠️ Please enter your name.")
         else:
-            feedback_entry = pd.DataFrame([{
+            feedback_entry = {
                 "Name": name,
                 "Usability_Rating": usability_rating,
                 "Accuracy_Relevance_Rating": accuracy_relevance,
                 "Suggestions": suggestions,
                 "Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            }])
-            
-            # Save to feedback.csv
-            csv_path = os.path.join(os.path.dirname(__file__), "feedback.csv")
-            if os.path.exists(csv_path):
-                df_existing = pd.read_csv(csv_path)
-                df_updated = pd.concat([df_existing, feedback_entry], ignore_index=True)
-            else:
-                df_updated = feedback_entry
-            df_updated.to_csv(csv_path, index=False)
-            
-            st.success(f"✅ Thank you, **{name}**! Your feedback has been recorded.")
-            st.balloons()
+            }
+
+            try:
+                g = Github(st.secrets["GITHUB_TOKEN"])
+                repo = g.get_repo(f"{st.secrets['GITHUB_USERNAME']}/{st.secrets['REPO_NAME']}")
+                file_path = "feedback.csv"
+                branch = st.secrets.get("BRANCH", "main")
+
+                # Try to get existing file
+                try:
+                    contents = repo.get_contents(file_path, ref=branch)
+                    # Read existing CSV from raw URL
+                    raw_url = f"https://raw.githubusercontent.com/{st.secrets['GITHUB_USERNAME']}/{st.secrets['REPO_NAME']}/{branch}/{file_path}"
+                    df_existing = pd.read_csv(raw_url)
+                    df_updated = pd.concat([df_existing, pd.DataFrame([feedback_entry])], ignore_index=True)
+                except:
+                    df_updated = pd.DataFrame([feedback_entry])
+
+                csv_content = df_updated.to_csv(index=False)
+
+                if 'contents' in locals():
+                    # Update existing file
+                    repo.update_file(
+                        path=file_path,
+                        message=f"New feedback from {name}",
+                        content=csv_content,
+                        sha=contents.sha,
+                        branch=branch
+                    )
+                else:
+                    # Create new file
+                    repo.create_file(
+                        path=file_path,
+                        message=f"Initial feedback from {name}",
+                        content=csv_content,
+                        branch=branch
+                    )
+
+                st.success(f"✅ Thank you, **{name}**! Your feedback has been recorded and saved to GitHub.")
+                st.balloons()
+                st.rerun()  # Refresh to show updated table
+
+            except Exception as e:
+                st.error(f"Error saving feedback to GitHub: {str(e)}")
+                st.info("Feedback could not be saved permanently.")
 
 # -----------------------------
 # Feedback Table & Download Section
@@ -167,12 +194,12 @@ with st.form(key="feedback_form", clear_on_submit=True):
 st.markdown("<br><hr style='border-top: 3px dashed #1E88E5;'>", unsafe_allow_html=True)
 st.markdown("<h2 style='text-align: center; color: #1E88E5;'>📊 All Submitted Feedbacks</h2>", unsafe_allow_html=True)
 
-csv_path = os.path.join(os.path.dirname(__file__), "feedback.csv")
-if os.path.exists(csv_path):
-    df_feedback = pd.read_csv(csv_path)
+try:
+    branch = st.secrets.get("BRANCH", "main")
+    feedback_url = f"https://raw.githubusercontent.com/{st.secrets['GITHUB_USERNAME']}/{st.secrets['REPO_NAME']}/{branch}/feedback.csv"
+    df_feedback = pd.read_csv(feedback_url)
     st.dataframe(df_feedback, use_container_width=True)
-    
-    # Download button
+
     csv_data = df_feedback.to_csv(index=False).encode('utf-8')
     st.download_button(
         label="📥 Download Feedbacks as CSV",
@@ -181,8 +208,8 @@ if os.path.exists(csv_path):
         mime="text/csv",
         use_container_width=True
     )
-else:
-    st.info("No feedback submitted yet.")
+except Exception as e:
+    st.info("No feedback submitted yet or unable to load from GitHub.")
 
 # -----------------------------
 # Footer
@@ -196,9 +223,4 @@ st.markdown("""
     </p>
 """, unsafe_allow_html=True)
 
-# Note about GitHub sync:
-st.caption("""
-**Note:** Feedbacks are saved locally to `feedback.csv`. 
-If your app is deployed on Streamlit Community Cloud (connected to a GitHub repo), 
-any change to this file will trigger an automatic redeploy, and the updated CSV will be visible in your repository.
-""")
+st.caption("**Feedback Persistence**: Feedbacks are now directly saved to your GitHub repository using the GitHub API. New entries will appear in `feedback.csv` on GitHub and in the app after refresh.")
