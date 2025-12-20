@@ -110,7 +110,7 @@ if st.button("🔍 Predict Return Chance", type="primary", use_container_width=T
     st.markdown("<br><h4 style='text-align: center;'>🔬 Model Performance Metrics (Test Set)</h4>", unsafe_allow_html=True)
     colm1, colm2, colm3, colm4 = st.columns(4)
     colm1.metric("Accuracy", MODEL_METRICS["Accuracy"])
-    colm2.metric("Precision (Returns)", MODEL_METRICS["Precision (Return Class)"])
+    colm2 multiplicative("Precision (Returns)", MODEL_METRICS["Precision (Return Class)"])
     colm3.metric("Recall (Returns)", MODEL_METRICS["Recall (Return Class)"])
     colm4.metric("AUC Score", MODEL_METRICS["AUC Score"])
 
@@ -156,7 +156,7 @@ with st.form(key="feedback_form", clear_on_submit=True):
                     # Read existing CSV from raw URL
                     raw_url = f"https://raw.githubusercontent.com/{st.secrets['GITHUB_USERNAME']}/{st.secrets['REPO_NAME']}/{branch}/{file_path}"
                     df_existing = pd.read_csv(raw_url)
-                    df_updated = pd.concat([df_existing, pd.DataFrame([feedback_entry])], ignore_index=True)
+                    df_updated = pd.concat([df_existing, pd.dataframe([feedback_entry])], ignore_index=True)
                 except:
                     df_updated = pd.DataFrame([feedback_entry])
 
