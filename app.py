@@ -5,7 +5,7 @@ import os
 from datetime import datetime
 import time
 from github import Github  # PyGithub
-from streamlit_star_rating import st_star_rating  # Animated star rating
+from streamlit_star_rating import st_star_rating
 
 # -----------------------------
 # Page Config & Dark Theme Setup
@@ -198,7 +198,7 @@ if st.button("🔍 Predict Return Chance", type="primary", use_container_width=T
 st.markdown("</div>", unsafe_allow_html=True)
 
 # -----------------------------
-# Feedback Section (Fixed: Unique keys for star ratings)
+# Feedback Section
 # -----------------------------
 st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
 st.markdown("<h2 style='text-align: center; color: #34d399;'>📝 Give Your Feedback</h2>", unsafe_allow_html=True)
@@ -216,7 +216,7 @@ with st.form(key="feedback_form", clear_on_submit=True):
             defaultValue=4, 
             size=30, 
             read_only=False,
-            key="usability_stars"  # Unique key to avoid duplicate ID error
+            key="usability_stars"
         )
     with colf2:
         st.markdown("<p style='text-align:center; color:#94a3b8;'>Accuracy & Relevance of Prediction</p>", unsafe_allow_html=True)
@@ -226,7 +226,7 @@ with st.form(key="feedback_form", clear_on_submit=True):
             defaultValue=4, 
             size=30, 
             read_only=False,
-            key="accuracy_stars"  # Unique key
+            key="accuracy_stars"
         )
     
     suggestions = st.text_area(
@@ -281,7 +281,9 @@ with st.form(key="feedback_form", clear_on_submit=True):
 
                 st.success(f"✅ Thank you, **{name}**! Your feedback has been recorded and saved to GitHub.")
                 st.balloons()
-                st.rerun()  # Auto-refresh to show new feedback immediately
+                
+                # Force immediate refresh of the feedback table below
+                st.rerun()
 
             except Exception as e:
                 st.error(f"Error saving feedback to GitHub: {str(e)}")
@@ -290,30 +292,40 @@ with st.form(key="feedback_form", clear_on_submit=True):
 st.markdown("</div>", unsafe_allow_html=True)
 
 # -----------------------------
-# Feedback Table
+# Feedback Table - Now with Auto-Refresh & Cache Bypass
 # -----------------------------
 st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
 st.markdown("<h2 style='text-align: center; color: #34d399;'>📊 All Submitted Feedbacks</h2>", unsafe_allow_html=True)
 
-try:
-    branch = st.secrets.get("BRANCH", "main")
-    feedback_url = f"https://raw.githubusercontent.com/{st.secrets['GITHUB_USERNAME']}/{st.secrets['REPO_NAME']}/{branch}/feedback.csv"
-    df_feedback = pd.read_csv(feedback_url)
-    
-    st.dataframe(df_feedback, use_container_width=True, hide_index=True)
-    
-    csv_data = df_feedback.to_csv(index=False).encode('utf-8')
-    st.download_button(
-        label="📥 Download Feedbacks as CSV",
-        data=csv_data,
-        file_name=f"feedbacks_{datetime.now().strftime('%Y%m%d')}.csv",
-        mime="text/csv",
-        use_container_width=True
-    )
-except Exception as e:
-    st.info("No feedback submitted yet or unable to load from GitHub.")
+# Create a placeholder for the table and download button
+feedback_placeholder = st.empty()
+
+with feedback_placeholder.container():
+    try:
+        branch = st.secrets.get("BRANCH", "main")
+        # Add timestamp to URL to bypass any caching
+        feedback_url = f"https://raw.githubusercontent.com/{st.secrets['GITHUB_USERNAME']}/{st.secrets['REPO_NAME']}/{branch}/feedback.csv?t={int(time.time())}"
+        
+        df_feedback = pd.read_csv(feedback_url)
+        
+        st.dataframe(df_feedback, use_container_width=True, hide_index=True)
+        
+        csv_data = df_feedback.to_csv(index=False).encode('utf-8')
+        st.download_button(
+            label="📥 Download Feedbacks as CSV",
+            data=csv_data,
+            file_name=f"feedbacks_{datetime.now().strftime('%Y%m%d')}.csv",
+            mime="text/csv",
+            use_container_width=True
+        )
+    except Exception as e:
+        st.info("No feedback submitted yet or unable to load from GitHub.")
 
 st.markdown("</div>", unsafe_allow_html=True)
+
+# Optional: Add a manual refresh button (nice UX touch)
+if st.button("🔄 Refresh Feedback Table", use_container_width=True):
+    st.rerun()
 
 # -----------------------------
 # Footer
@@ -324,9 +336,6 @@ st.markdown("""
             <strong>Data Science Assignment 4</strong> | BSCS-F22 | Instructor: Ghulam Ali<br>
             Model: XGBoost Classifier | Dataset: Online Retail (UCI/Kaggle)<br>
             Deployment: Streamlit Cloud | Version 1.0 — December 2025
-        </p>
-        <p style='color: #64748b; font-size: 13px; margin-top: 15px;'>
-            **Feedback Persistence**: Feedbacks are saved directly to GitHub. New entries appear instantly after submission.
         </p>
     </div>
 """, unsafe_allow_html=True)
