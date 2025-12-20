@@ -125,8 +125,8 @@ MODEL_METRICS = {
 # -----------------------------
 # Prediction Section
 # -----------------------------
-st.markdown("<div class='glass-card'> st.header("📦 Enter Product & Order Details") </div>", unsafe_allow_html=True)
-
+st.markdown("<div class='glass-card'>Enter Product & Order Details </div>", unsafe_allow_html=True)
+st.header("Enter Product & Order Details")
 
 col1, col2 = st.columns(2)
 with col1:
@@ -341,6 +341,7 @@ st.markdown("""
         </p>
     </div>
 """, unsafe_allow_html=True)
+
 
 
 
