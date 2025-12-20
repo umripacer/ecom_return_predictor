@@ -5,7 +5,7 @@ import os
 from datetime import datetime
 import time
 from github import Github  # PyGithub
-from streamlit_star_rating import st_star_rating  # New import for animated stars
+from streamlit_star_rating import st_star_rating
 
 # -----------------------------
 # Page Config & Dark Theme
@@ -16,22 +16,17 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Custom CSS for Supabase-inspired dark glassmorphism theme
+# Custom CSS - Supabase-inspired dark glassmorphism
 st.markdown("""
 <style>
-    /* Main background */
     .stApp {
         background: linear-gradient(135deg, #0d1117, #161b22);
         color: #c9d1d9;
     }
-    
-    /* Headers */
     h1, h2, h3 {
         color: #58a6ff !important;
         text-shadow: 0 2px 8px rgba(88, 166, 255, 0.3);
     }
-    
-    /* Glassmorphic cards */
     .glass-card {
         background: rgba(13, 17, 23, 0.65);
         backdrop-filter: blur(16px);
@@ -42,15 +37,11 @@ st.markdown("""
         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
         margin: 20px 0;
     }
-    
-    /* Input widgets */
-    .stSelectbox > div > div, .stNumberInput > div, .stTextInput > div {
+    .stSelectbox > div > div, .stNumberInput > div, .stTextInput > div, .stTextArea > div {
         background: rgba(22, 27, 34, 0.8);
         border-radius: 12px;
         border: 1px solid rgba(88, 166, 255, 0.3);
     }
-    
-    /* Buttons */
     .stButton > button {
         background: linear-gradient(90deg, #1f6feb, #58a6ff);
         border: none;
@@ -63,8 +54,6 @@ st.markdown("""
         transform: translateY(-2px);
         box-shadow: 0 8px 20px rgba(31, 111, 235, 0.6);
     }
-    
-    /* Metrics */
     .stMetric {
         background: rgba(13, 17, 23, 0.7);
         backdrop-filter: blur(10px);
@@ -72,19 +61,12 @@ st.markdown("""
         padding: 12px;
         border: 1px solid rgba(88, 166, 255, 0.2);
     }
-    
-    /* Dataframe table */
-    .stDataFrame {
-        border-radius: 16px;
-        overflow: hidden;
-    }
     div[data-testid="stDataFrame"] {
         background: rgba(22, 27, 34, 0.6);
         backdrop-filter: blur(12px);
         border: 1px solid rgba(88, 166, 255, 0.2);
+        border-radius: 16px;
     }
-    
-    /* Footer */
     .footer {
         text-align: center;
         color: #8b949e;
@@ -119,7 +101,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # -----------------------------
-# Model Performance Metrics
+# Model Metrics
 # -----------------------------
 MODEL_METRICS = {
     "Accuracy": "0.9245",
@@ -129,10 +111,10 @@ MODEL_METRICS = {
 }
 
 # -----------------------------
-# Main Prediction Section
+# Prediction Section
 # -----------------------------
 st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
-st.header("📦 Enter Product & Order Details", anchor=False)
+st.header("📦 Enter Product & Order Details")
 
 col1, col2 = st.columns(2)
 with col1:
@@ -150,7 +132,7 @@ with col2:
     is_weekend = st.checkbox("Weekend Order", value=False)
 
 if st.button("🔍 Predict Return Chance", type="primary", use_container_width=True):
-    with st.spinner("Analyzing order details and predicting risk..."):
+    with st.spinner("Analyzing order details..."):
         time.sleep(1.5)
         input_data = pd.DataFrame({
             'UnitPrice': [unit_price],
@@ -190,24 +172,24 @@ if st.button("🔍 Predict Return Chance", type="primary", use_container_width=T
         st.snow()
 
     if return_probability > 0.05:
-        st.warning("**Recommendation**: Enhance product photos, detailed sizing charts, or clear material description for this category.")
+        st.warning("**Recommendation**: Enhance product photos, detailed sizing charts, or clear material description.")
     else:
         st.success("**Great choice!** High customer satisfaction expected.")
 
 st.markdown("</div>", unsafe_allow_html=True)
 
-# Metrics
+# Metrics Card
 st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
 st.markdown("<h4 style='text-align: center;'>🔬 Model Performance Metrics (Test Set)</h4>", unsafe_allow_html=True)
-colm1, colm2, colm3, colm4 = st.columns(4)
-colm1.metric("Accuracy", MODEL_METRICS["Accuracy"])
-colm2.metric("Precision (Returns)", MODEL_METRICS["Precision (Return Class)"])
-colm3.metric("Recall (Returns)", MODEL_METRICS["Recall (Return Class)"])
-colm4.metric("AUC Score", MODEL_METRICS["AUC Score"])
+c1, c2, c3, c4 = st.columns(4)
+c1.metric("Accuracy", MODEL_METRICS["Accuracy"])
+c2.metric("Precision (Returns)", MODEL_METRICS["Precision (Return Class)"])
+c3.metric("Recall (Returns)", MODEL_METRICS["Recall (Return Class)"])
+c4.metric("AUC Score", MODEL_METRICS["AUC Score"])
 st.markdown("</div>", unsafe_allow_html=True)
 
 # -----------------------------
-# Feedback Section with Star Rating
+# Feedback Section
 # -----------------------------
 st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
 st.markdown("<h2 style='text-align: center;'>📝 Give Your Feedback</h2>", unsafe_allow_html=True)
@@ -215,15 +197,15 @@ st.write("Your feedback helps improve the model and user experience!")
 
 with st.form(key="feedback_form", clear_on_submit=True):
     name = st.text_input("Your Name *", placeholder="e.g., Umar Farooq")
-    
+
     colf1, colf2 = st.columns(2)
     with colf1:
         st.write("**Usability of the App**")
-        usability_rating = st_star_rating("", maxValue=5, defaultValue=4, size=30, dark_mode=True)
+        usability_rating = st_star_rating("Rate usability", maxValue=5, defaultValue=4, size=30)
     with colf2:
         st.write("**Accuracy & Relevance of Prediction**")
-        accuracy_relevance = st_star_rating("", maxValue=5, defaultValue=4, size=30, dark_mode=True)
-    
+        accuracy_relevance = st_star_rating("Rate accuracy", maxValue=5, defaultValue=4, size=30)
+
     suggestions = st.text_area("Suggestions for Improvement",
                                placeholder="e.g., Add product images, allow bulk upload, show explanations, etc.")
 
@@ -245,6 +227,7 @@ with st.form(key="feedback_form", clear_on_submit=True):
                 repo = g.get_repo(f"{st.secrets['GITHUB_USERNAME']}/{st.secrets['REPO_NAME']}")
                 file_path = "feedback.csv"
                 branch = st.secrets.get("BRANCH", "main")
+
                 try:
                     contents = repo.get_contents(file_path, ref=branch)
                     raw_url = f"https://raw.githubusercontent.com/{st.secrets['GITHUB_USERNAME']}/{st.secrets['REPO_NAME']}/{branch}/{file_path}"
@@ -252,60 +235,57 @@ with st.form(key="feedback_form", clear_on_submit=True):
                     df_updated = pd.concat([df_existing, pd.DataFrame([feedback_entry])], ignore_index=True)
                 except:
                     df_updated = pd.DataFrame([feedback_entry])
+
                 csv_content = df_updated.to_csv(index=False)
+
                 if 'contents' in locals():
-                    repo.update_file(
-                        path=file_path,
-                        message=f"New feedback from {name}",
-                        content=csv_content,
-                        sha=contents.sha,
-                        branch=branch
-                    )
+                    repo.update_file(path=file_path, message=f"Feedback from {name}", content=csv_content, sha=contents.sha, branch=branch)
                 else:
-                    repo.create_file(
-                        path=file_path,
-                        message=f"Initial feedback from {name}",
-                        content=csv_content,
-                        branch=branch
-                    )
-                st.success(f"✅ Thank you, **{name}**! Your feedback has been recorded.")
+                    repo.create_file(path=file_path, message=f"Initial feedback from {name}", content=csv_content, branch=branch)
+
+                st.success(f"✅ Thank you, **{name}**! Your feedback has been saved.")
                 st.balloons()
-                st.rerun()
             except Exception as e:
                 st.error(f"Error saving feedback: {str(e)}")
+
 st.markdown("</div>", unsafe_allow_html=True)
 
 # -----------------------------
-# Real-time Feedback Table
+# Feedback Table with Auto-Refresh
 # -----------------------------
 st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
 st.markdown("<h2 style='text-align: center;'>📊 All Submitted Feedbacks</h2>", unsafe_allow_html=True)
 
-# Auto-refresh placeholder
-feedback_placeholder = st.empty()
+# Session state for refresh control
+if 'last_refresh' not in st.session_state:
+    st.session_state.last_refresh = datetime.now()
 
-with feedback_placeholder.container():
-    try:
-        branch = st.secrets.get("BRANCH", "main")
-        feedback_url = f"https://raw.githubusercontent.com/{st.secrets['GITHUB_USERNAME']}/{st.secrets['REPO_NAME']}/{branch}/feedback.csv"
-        df_feedback = pd.read_csv(feedback_url)
-        
-        st.dataframe(df_feedback, use_container_width=True, hide_index=True)
-        
-        csv_data = df_feedback.to_csv(index=False).encode('utf-8')
-        st.download_button(
-            label="📥 Download Feedbacks as CSV",
-            data=csv_data,
-            file_name=f"feedbacks_{datetime.now().strftime('%Y%m%d')}.csv",
-            mime="text/csv",
-            use_container_width=True
-        )
-    except Exception as e:
-        st.info("No feedback submitted yet or loading...")
+# Auto-refresh every 15 seconds
+time_since_refresh = (datetime.now() - st.session_state.last_refresh).seconds
+if time_since_refresh > 15:
+    st.rerun()
 
-# Auto-refresh every 10 seconds
-time.sleep(10)
-st.rerun()
+try:
+    branch = st.secrets.get("BRANCH", "main")
+    feedback_url = f"https://raw.githubusercontent.com/{st.secrets['GITHUB_USERNAME']}/{st.secrets['REPO_NAME']}/{branch}/feedback.csv"
+    df_feedback = pd.read_csv(feedback_url)
+    
+    st.dataframe(df_feedback, use_container_width=True, hide_index=True)
+    
+    csv_data = df_feedback.to_csv(index=False).encode('utf-8')
+    st.download_button(
+        label="📥 Download Feedbacks as CSV",
+        data=csv_data,
+        file_name=f"feedbacks_{datetime.now().strftime('%Y%m%d')}.csv",
+        mime="text/csv",
+        use_container_width=True
+    )
+    
+    # Update last refresh time only on successful load
+    st.session_state.last_refresh = datetime.now()
+
+except:
+    st.info("No feedback submitted yet or loading...")
 
 st.markdown("</div>", unsafe_allow_html=True)
 
@@ -319,6 +299,6 @@ st.markdown("""
         Deployment: Streamlit Cloud | Version 1.0 — December 2025
     </div>
     <p style="text-align: center; color: #58a6ff; margin-top: 20px;">
-        ⭐ Feedbacks are saved to GitHub and update in real-time with glassmorphic dark theme.
+        ⭐ Feedback saved to GitHub • Real-time updates • Glassmorphic Dark Theme
     </p>
 """, unsafe_allow_html=True)
