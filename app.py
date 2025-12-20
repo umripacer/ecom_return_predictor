@@ -23,16 +23,53 @@ model, scaler, le_category, le_country = load_artifacts()
 # -----------------------------
 # Page Config & Title
 # -----------------------------
-st.set_page_config(page_title="Return Risk Predictor", layout="centered", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="Return Risk Predictor", layout="centered", initial_sidebar_state="collapsed", page_icon="🛒")
 
 st.markdown("""
-    <h1 style='text-align: center; color: #1E88E5; text-shadow: 2px 2px 4px rgba(0,0,0,0.1);'>
+    <style>
+        /* Dark theme background and text */
+        .main {background-color: #0F111A; color: #E0E0E0;}
+        .css-18e3th9 {background-color: #0F111A;}
+        .stButton>button {background-color: #00FFA3; color: #0F111A; font-weight:bold;}
+        .stSlider>div>div>div>div {background: #00FFA3;}
+        /* Glassmorphism card */
+        .glass-card {
+            background: rgba(15,17,26,0.65);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px 0 rgba(0,0,0,0.37);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        /* Table styling */
+        .stDataFrame div.row-widget.stRadio > div {color: #fff;}
+        .dataframe-container {
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            backdrop-filter: blur(8px);
+            background: rgba(0,0,0,0.6);
+        }
+        /* Scroll effect for table */
+        .dataframe-container::-webkit-scrollbar {
+            width: 8px;
+        }
+        .dataframe-container::-webkit-scrollbar-thumb {
+            background: #00FFA3;
+            border-radius: 10px;
+        }
+        h1, h2, h3, h4 {color: #00FFA3;}
+    </style>
+""", unsafe_allow_html=True)
+
+st.markdown("""
+    <h1 style='text-align: center; color: #00FFA3; text-shadow: 2px 2px 8px rgba(0,255,163,0.3);'>
         🛒 E-Commerce Product Return Risk Predictor
     </h1>
-    <h3 style='text-align: center; color: #424242;'>
+    <h3 style='text-align: center; color: #B0B0B0;'>
         Predict if a customer is likely to return their order
     </h3>
-    <hr style='border: 2px solid #1E88E5; border-radius: 5px;'>
+    <hr style='border: 2px solid #00FFA3; border-radius: 5px;'>
 """, unsafe_allow_html=True)
 
 # -----------------------------
@@ -86,11 +123,10 @@ if st.button("🔍 Predict Return Chance", type="primary", use_container_width=T
     placeholder = st.empty()
     with placeholder.container():
         st.markdown(f"""
-            <div style='text-align: center; padding: 30px; border-radius: 20px;
-                        background: linear-gradient(135deg, {'#FF5252' if return_probability > 0.05 else '#4CAF50'}, #ffffff);
-                        box-shadow: 0 8px 20px rgba(0,0,0,0.15); color: white;'>
+            <div class='glass-card' style='text-align: center; padding: 40px; 
+                        background: linear-gradient(135deg, {'#FF5252' if return_probability > 0.05 else '#00FFA3'}, #111);'>
                 <h1 style='margin:0; font-size: 60px;'>{return_probability:.1%}</h1>
-                <h3 style='margin:5px 0;'>Probability of Return</h3>
+                <h3 style='margin:5px 0; color:#E0E0E0;'>Probability of Return</h3>
                 <h2 style='margin:10px 0; color: {'#FFEB3B' if return_probability > 0.05 else '#FFFFFF'};'>{prediction}</h2>
             </div>
         """, unsafe_allow_html=True)
@@ -107,7 +143,7 @@ if st.button("🔍 Predict Return Chance", type="primary", use_container_width=T
     else:
         st.success("**Great choice!** High customer satisfaction expected.")
 
-    st.markdown("<br><h4 style='text-align: center;'>🔬 Model Performance Metrics (Test Set)</h4>", unsafe_allow_html=True)
+    st.markdown("<br><h4 style='text-align: center; color:#00FFA3;'>🔬 Model Performance Metrics (Test Set)</h4>", unsafe_allow_html=True)
     colm1, colm2, colm3, colm4 = st.columns(4)
     colm1.metric("Accuracy", MODEL_METRICS["Accuracy"])
     colm2.metric("Precision (Returns)", MODEL_METRICS["Precision (Return Class)"])
@@ -117,8 +153,8 @@ if st.button("🔍 Predict Return Chance", type="primary", use_container_width=T
 # -----------------------------
 # Feedback Section
 # -----------------------------
-st.markdown("<br><hr style='border-top: 3px dashed #1E88E5;'>", unsafe_allow_html=True)
-st.markdown("<h2 style='text-align: center; color: #1E88E5;'>📝 Give Your Feedback</h2>", unsafe_allow_html=True)
+st.markdown("<br><hr style='border-top: 3px dashed #00FFA3;'>", unsafe_allow_html=True)
+st.markdown("<h2 style='text-align: center; color: #00FFA3;'>📝 Give Your Feedback</h2>", unsafe_allow_html=True)
 st.write("Your feedback helps improve the model and user experience!")
 
 with st.form(key="feedback_form", clear_on_submit=True):
@@ -153,7 +189,6 @@ with st.form(key="feedback_form", clear_on_submit=True):
                 # Try to get existing file
                 try:
                     contents = repo.get_contents(file_path, ref=branch)
-                    # Read existing CSV from raw URL
                     raw_url = f"https://raw.githubusercontent.com/{st.secrets['GITHUB_USERNAME']}/{st.secrets['REPO_NAME']}/{branch}/{file_path}"
                     df_existing = pd.read_csv(raw_url)
                     df_updated = pd.concat([df_existing, pd.DataFrame([feedback_entry])], ignore_index=True)
@@ -163,7 +198,6 @@ with st.form(key="feedback_form", clear_on_submit=True):
                 csv_content = df_updated.to_csv(index=False)
 
                 if 'contents' in locals():
-                    # Update existing file
                     repo.update_file(
                         path=file_path,
                         message=f"New feedback from {name}",
@@ -172,7 +206,6 @@ with st.form(key="feedback_form", clear_on_submit=True):
                         branch=branch
                     )
                 else:
-                    # Create new file
                     repo.create_file(
                         path=file_path,
                         message=f"Initial feedback from {name}",
@@ -182,7 +215,7 @@ with st.form(key="feedback_form", clear_on_submit=True):
 
                 st.success(f"✅ Thank you, **{name}**! Your feedback has been recorded and saved to GitHub.")
                 st.balloons()
-                st.rerun()  # Refresh to show updated table
+                st.experimental_rerun()  # Refresh to show updated table in real-time
 
             except Exception as e:
                 st.error(f"Error saving feedback to GitHub: {str(e)}")
@@ -191,14 +224,17 @@ with st.form(key="feedback_form", clear_on_submit=True):
 # -----------------------------
 # Feedback Table & Download Section
 # -----------------------------
-st.markdown("<br><hr style='border-top: 3px dashed #1E88E5;'>", unsafe_allow_html=True)
-st.markdown("<h2 style='text-align: center; color: #1E88E5;'>📊 All Submitted Feedbacks</h2>", unsafe_allow_html=True)
+st.markdown("<br><hr style='border-top: 3px dashed #00FFA3;'>", unsafe_allow_html=True)
+st.markdown("<h2 style='text-align: center; color: #00FFA3;'>📊 All Submitted Feedbacks</h2>", unsafe_allow_html=True)
 
 try:
     branch = st.secrets.get("BRANCH", "main")
     feedback_url = f"https://raw.githubusercontent.com/{st.secrets['GITHUB_USERNAME']}/{st.secrets['REPO_NAME']}/{branch}/feedback.csv"
     df_feedback = pd.read_csv(feedback_url)
-    st.dataframe(df_feedback, use_container_width=True)
+
+    st.markdown("<div class='dataframe-container'>", unsafe_allow_html=True)
+    st.dataframe(df_feedback, use_container_width=True, height=400)
+    st.markdown("</div>", unsafe_allow_html=True)
 
     csv_data = df_feedback.to_csv(index=False).encode('utf-8')
     st.download_button(
@@ -216,11 +252,11 @@ except Exception as e:
 # -----------------------------
 st.markdown("<br><hr>", unsafe_allow_html=True)
 st.markdown("""
-    <p style='text-align: center; color: #666; font-size: 14px;'>
+    <p style='text-align: center; color: #888; font-size: 14px;'>
         <strong>Data Science Assignment 4</strong> | BSCS-F22 | Instructor: Ghulam Ali<br>
         Model: XGBoost Classifier | Dataset: Online Retail (UCI/Kaggle)<br>
         Deployment: Streamlit Cloud | Version 1.0 — December 2025
     </p>
 """, unsafe_allow_html=True)
 
-st.caption("**Feedback Persistence**: Feedbacks are now directly saved to your GitHub repository using the GitHub API. New entries will appear in `feedback.csv` on GitHub and in the app after refresh.")
+st.caption("**Feedback Persistence**: Feedbacks are now directly saved to your GitHub repository using the GitHub API. New entries will appear in `feedback.csv` on GitHub and in the app in real-time.")
