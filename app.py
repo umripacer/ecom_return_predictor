@@ -292,21 +292,34 @@ with st.form(key="feedback_form", clear_on_submit=True):
 st.markdown("</div>", unsafe_allow_html=True)
 
 # -----------------------------
-# Feedback Table - Now with Auto-Refresh & Cache Bypass
+# Feedback Table - Guaranteed Latest Data (No Cache Issue)
 # -----------------------------
 st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
 st.markdown("<h2 style='text-align: center; color: #34d399;'>📊 All Submitted Feedbacks</h2>", unsafe_allow_html=True)
 
-# Create a placeholder for the table and download button
-feedback_placeholder = st.empty()
+# Placeholder for dynamic update
+feedback_container = st.empty()
 
-with feedback_placeholder.container():
+with feedback_container.container():
     try:
         branch = st.secrets.get("BRANCH", "main")
-        # Add timestamp to URL to bypass any caching
-        feedback_url = f"https://raw.githubusercontent.com/{st.secrets['GITHUB_USERNAME']}/{st.secrets['REPO_NAME']}/{branch}/feedback.csv?t={int(time.time())}"
+        # Cache bypass with unique timestamp + headers to force fresh fetch
+        feedback_url = f"https://raw.githubusercontent.com/{st.secrets['GITHUB_USERNAME']}/{st.secrets['REPO_NAME']}/{branch}/feedback.csv"
         
-        df_feedback = pd.read_csv(feedback_url)
+        df_feedback = pd.read_csv(
+            feedback_url,
+            storage_options={
+                "User-Agent": "streamlit-app",
+                "Cache-Control": "no-cache, no-store, must-revalidate",
+                "Pragma": "no-cache",
+                "Expires": "0"
+            }
+        )
+        
+        # Sort by Timestamp descending to show latest feedback on top
+        if 'Timestamp' in df_feedback.columns:
+            df_feedback['Timestamp'] = pd.to_datetime(df_feedback['Timestamp'])
+            df_feedback = df_feedback.sort_values('Timestamp', ascending=False).reset_index(drop=True)
         
         st.dataframe(df_feedback, use_container_width=True, hide_index=True)
         
@@ -318,12 +331,13 @@ with feedback_placeholder.container():
             mime="text/csv",
             use_container_width=True
         )
+        
     except Exception as e:
         st.info("No feedback submitted yet or unable to load from GitHub.")
 
 st.markdown("</div>", unsafe_allow_html=True)
 
-# Optional: Add a manual refresh button (nice UX touch)
+# Optional: Manual refresh button (extra safety)
 if st.button("🔄 Refresh Feedback Table", use_container_width=True):
     st.rerun()
 
@@ -339,3 +353,4 @@ st.markdown("""
         </p>
     </div>
 """, unsafe_allow_html=True)
+
