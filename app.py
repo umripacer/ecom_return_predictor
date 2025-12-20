@@ -125,7 +125,6 @@ MODEL_METRICS = {
 # -----------------------------
 # Prediction Section
 # -----------------------------
-st.markdown("<div class='glass-card'>Enter Product & Order Details </div>", unsafe_allow_html=True)
 st.header("Enter Product & Order Details")
 
 col1, col2 = st.columns(2)
@@ -200,7 +199,6 @@ st.markdown("</div>", unsafe_allow_html=True)
 # -----------------------------
 # Feedback Section
 # -----------------------------
-st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
 st.markdown("<h2 style='text-align: center; color: #34d399;'>📝 Give Your Feedback</h2>", unsafe_allow_html=True)
 st.write("Your feedback helps improve the model and user experience!")
 
@@ -294,7 +292,6 @@ st.markdown("</div>", unsafe_allow_html=True)
 # -----------------------------
 # Feedback Table - Fetch Directly from GitHub (Always Latest)
 # -----------------------------
-st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
 st.markdown("<h2 style='text-align: center; color: #34d399;'>📊 All Submitted Feedbacks</h2>", unsafe_allow_html=True)
 
 feedback_placeholder = st.empty()
@@ -336,11 +333,12 @@ st.markdown("""
     <div class='glass-card' style='text-align: center; padding: 1.5rem; margin-top: 3rem;'>
         <p style='color: #94a3b8; font-size: 14px; margin:5px;'>
             <strong>Data Science Assignment 4</strong> | BSCS-F22 | Instructor: Ghulam Ali<br>
-            Model: XGBoost Classifier | Dataset: Online Retail (UCI/Kaggle)<br>
+            Model: Linear Regression | Dataset: Online Retail (UCI/Kaggle)<br>
             Deployment: Streamlit Cloud | Version 1.0 — December 2025
         </p>
     </div>
 """, unsafe_allow_html=True)
+
 
 
 
