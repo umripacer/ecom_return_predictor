@@ -1,8 +1,7 @@
 streamlit
+st-star-rating
 pandas
 xgboost
 scikit-learn
 PyGithub
 joblib
-
-
