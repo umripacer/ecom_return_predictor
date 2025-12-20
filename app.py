@@ -292,40 +292,42 @@ with st.form(key="feedback_form", clear_on_submit=True):
 st.markdown("</div>", unsafe_allow_html=True)
 
 # -----------------------------
-# Feedback Table - Now with Auto-Refresh & Cache Bypass
+# Feedback Table - Fetch Directly from GitHub (Always Latest)
 # -----------------------------
 st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
 st.markdown("<h2 style='text-align: center; color: #34d399;'>📊 All Submitted Feedbacks</h2>", unsafe_allow_html=True)
 
-# Create a placeholder for the table and download button
 feedback_placeholder = st.empty()
 
 with feedback_placeholder.container():
     try:
+        g = Github(st.secrets["GITHUB_TOKEN"])
+        repo = g.get_repo(f"{st.secrets['GITHUB_USERNAME']}/{st.secrets['REPO_NAME']}")
         branch = st.secrets.get("BRANCH", "main")
-        # Add timestamp to URL to bypass any caching
-        feedback_url = f"https://raw.githubusercontent.com/{st.secrets['GITHUB_USERNAME']}/{st.secrets['REPO_NAME']}/{branch}/feedback.csv?t={int(time.time())}"
-        
-        df_feedback = pd.read_csv(feedback_url)
-        
-        st.dataframe(df_feedback, use_container_width=True, hide_index=True)
-        
-        csv_data = df_feedback.to_csv(index=False).encode('utf-8')
-        st.download_button(
-            label="📥 Download Feedbacks as CSV",
-            data=csv_data,
-            file_name=f"feedbacks_{datetime.now().strftime('%Y%m%d')}.csv",
-            mime="text/csv",
-            use_container_width=True
-        )
+        file_path = "feedback.csv"
+
+        try:
+            contents = repo.get_contents(file_path, ref=branch)
+            import io
+            df_feedback = pd.read_csv(io.StringIO(contents.decoded_content.decode('utf-8')))
+            
+            st.dataframe(df_feedback, use_container_width=True, hide_index=True)
+            
+            csv_data = df_feedback.to_csv(index=False).encode('utf-8')
+            st.download_button(
+                label="📥 Download Feedbacks as CSV",
+                data=csv_data,
+                file_name=f"feedbacks_{datetime.now().strftime('%Y%m%d')}.csv",
+                mime="text/csv",
+                use_container_width=True
+            )
+        except:
+            st.info("No feedback submitted yet.")
     except Exception as e:
-        st.info("No feedback submitted yet or unable to load from GitHub.")
+        st.error(f"Unable to load feedback from GitHub: {e}")
 
 st.markdown("</div>", unsafe_allow_html=True)
 
-# Optional: Add a manual refresh button (nice UX touch)
-if st.button("🔄 Refresh Feedback Table", use_container_width=True):
-    st.rerun()
 
 # -----------------------------
 # Footer
@@ -342,3 +344,4 @@ st.markdown("""
         </p>
     </div>
 """, unsafe_allow_html=True)
+
