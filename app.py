@@ -5,7 +5,7 @@ import os
 from datetime import datetime
 import time
 from github import Github  # PyGithub
-from streamlit_star_rating import st_star_rating  # NEW: Animated star rating component
+from streamlit_star_rating import st_star_rating  # Animated star rating
 
 # -----------------------------
 # Page Config & Dark Theme Setup
@@ -16,10 +16,10 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Force dark theme + Supabase-inspired color palette (dark emerald green + glassmorphism)
+# Force dark theme + Supabase-inspired emerald green + glassmorphism
 st.markdown("""
     <style>
-        /* Main background & Supabase-like dark theme */
+        /* Main background */
         .stApp {
             background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
             color: #e2e8f0;
@@ -37,13 +37,13 @@ st.markdown("""
             margin-bottom: 2rem;
         }
         
-        /* Header styling */
+        /* Headers */
         h1, h2, h3, h4 {
-            color: #34d399 !important; /* Supabase emerald green */
+            color: #34d399 !important;
             text-align: center;
         }
         
-        /* Metrics & result card */
+        /* Metrics */
         .stMetric {
             background: rgba(52, 211, 153, 0.15);
             border-radius: 12px;
@@ -51,22 +51,21 @@ st.markdown("""
             border: 1px solid rgba(52, 211, 153, 0.3);
         }
         
-        /* Dataframe glass effect + fade edges */
+        /* Dataframe glass effect */
         .stDataFrame {
             background: rgba(30, 41, 59, 0.7);
             backdrop-filter: blur(12px);
             border-radius: 16px;
-            overflow: hidden;
             border: 1px solid rgba(148, 163, 184, 0.2);
         }
         
-        /* Fade top/bottom of table for 3D depth */
+        /* Fade edges for 3D table effect */
         div[data-testid="stVerticalBlock"] > div.element-container > div.stDataFrame {
             mask-image: linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%);
             -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%);
         }
         
-        /* Buttons - emerald green */
+        /* Emerald buttons */
         .stButton > button {
             background: #34d399;
             color: #0f172a;
@@ -81,9 +80,7 @@ st.markdown("""
             box-shadow: 0 10px 20px rgba(52, 211, 153, 0.3);
         }
         
-        hr {
-            border-color: #334155;
-        }
+        hr { border-color: #334155; }
     </style>
 """, unsafe_allow_html=True)
 
@@ -102,7 +99,7 @@ def load_artifacts():
 model, scaler, le_category, le_country = load_artifacts()
 
 # -----------------------------
-# Title with 3D glass effect
+# Title
 # -----------------------------
 st.markdown("""
     <div class="glass-card">
@@ -116,7 +113,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # -----------------------------
-# Model Performance Metrics
+# Model Metrics
 # -----------------------------
 MODEL_METRICS = {
     "Accuracy": "0.9245",
@@ -126,7 +123,7 @@ MODEL_METRICS = {
 }
 
 # -----------------------------
-# Main Prediction Section (Glass Card)
+# Prediction Section
 # -----------------------------
 st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
 st.header("📦 Enter Product & Order Details")
@@ -164,22 +161,20 @@ if st.button("🔍 Predict Return Chance", type="primary", use_container_width=T
         prediction = "Return Likely" if return_probability > 0.05 else "Return Unlikely"
 
     st.markdown("<br>", unsafe_allow_html=True)
-    placeholder = st.empty()
-    with placeholder.container():
-        st.markdown(f"""
-            <div style='text-align: center; padding: 40px; border-radius: 24px;
-                        background: linear-gradient(135deg, {'#f87171' if return_probability > 0.05 else '#34d399'}, #1e293b);
-                        backdrop-filter: blur(12px); box-shadow: 0 12px 30px rgba(0,0,0,0.5);
-                        border: 1px solid rgba(255,255,255,0.1);'>
-                <h1 style='margin:0; font-size: 72px; color: white; text-shadow: 0 4px 20px rgba(0,0,0,0.6);'>
-                    {return_probability:.1%}
-                </h1>
-                <h3 style='margin:10px 0; color: #e2e8f0;'>Probability of Return</h3>
-                <h2 style='margin:15px 0; color: {'#fbbf24' if return_probability > 0.05 else '#ffffff'};'>
-                    {prediction}
-                </h2>
-            </div>
-        """, unsafe_allow_html=True)
+    st.markdown(f"""
+        <div style='text-align: center; padding: 40px; border-radius: 24px;
+                    background: linear-gradient(135deg, {'#f87171' if return_probability > 0.05 else '#34d399'}, #1e293b);
+                    backdrop-filter: blur(12px); box-shadow: 0 12px 30px rgba(0,0,0,0.5);
+                    border: 1px solid rgba(255,255,255,0.1);'>
+            <h1 style='margin:0; font-size: 72px; color: white; text-shadow: 0 4px 20px rgba(0,0,0,0.6);'>
+                {return_probability:.1%}
+            </h1>
+            <h3 style='margin:10px 0; color: #e2e8f0;'>Probability of Return</h3>
+            <h2 style='margin:15px 0; color: {'#fbbf24' if return_probability > 0.05 else '#ffffff'};'>
+                {prediction}
+            </h2>
+        </div>
+    """, unsafe_allow_html=True)
 
     if return_probability <= 0.05:
         st.success("🎉 Low Risk! This order is likely to be kept.")
@@ -203,7 +198,7 @@ if st.button("🔍 Predict Return Chance", type="primary", use_container_width=T
 st.markdown("</div>", unsafe_allow_html=True)
 
 # -----------------------------
-# Feedback Section (Glass Card + Star Ratings)
+# Feedback Section (Fixed: Unique keys for star ratings)
 # -----------------------------
 st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
 st.markdown("<h2 style='text-align: center; color: #34d399;'>📝 Give Your Feedback</h2>", unsafe_allow_html=True)
@@ -215,13 +210,29 @@ with st.form(key="feedback_form", clear_on_submit=True):
     colf1, colf2 = st.columns(2)
     with colf1:
         st.markdown("<p style='text-align:center; color:#94a3b8;'>Usability of the App</p>", unsafe_allow_html=True)
-        usability_rating = st_star_rating("", maxValue=5, defaultValue=4, size=30, read_only=False)
+        usability_rating = st_star_rating(
+            label="", 
+            maxValue=5, 
+            defaultValue=4, 
+            size=30, 
+            read_only=False,
+            key="usability_stars"  # Unique key to avoid duplicate ID error
+        )
     with colf2:
         st.markdown("<p style='text-align:center; color:#94a3b8;'>Accuracy & Relevance of Prediction</p>", unsafe_allow_html=True)
-        accuracy_relevance = st_star_rating("", maxValue=5, defaultValue=4, size=30, read_only=False)
+        accuracy_relevance = st_star_rating(
+            label="", 
+            maxValue=5, 
+            defaultValue=4, 
+            size=30, 
+            read_only=False,
+            key="accuracy_stars"  # Unique key
+        )
     
-    suggestions = st.text_area("Suggestions for Improvement",
-                               placeholder="e.g., Add product images, allow bulk upload, show explanations, etc.")
+    suggestions = st.text_area(
+        "Suggestions for Improvement",
+        placeholder="e.g., Add product images, allow bulk upload, show explanations, etc."
+    )
 
     submitted = st.form_submit_button("🚀 Submit Feedback", type="primary", use_container_width=True)
 
@@ -241,6 +252,7 @@ with st.form(key="feedback_form", clear_on_submit=True):
                 repo = g.get_repo(f"{st.secrets['GITHUB_USERNAME']}/{st.secrets['REPO_NAME']}")
                 file_path = "feedback.csv"
                 branch = st.secrets.get("BRANCH", "main")
+
                 try:
                     contents = repo.get_contents(file_path, ref=branch)
                     raw_url = f"https://raw.githubusercontent.com/{st.secrets['GITHUB_USERNAME']}/{st.secrets['REPO_NAME']}/{branch}/{file_path}"
@@ -248,7 +260,9 @@ with st.form(key="feedback_form", clear_on_submit=True):
                     df_updated = pd.concat([df_existing, pd.DataFrame([feedback_entry])], ignore_index=True)
                 except:
                     df_updated = pd.DataFrame([feedback_entry])
+
                 csv_content = df_updated.to_csv(index=False)
+
                 if 'contents' in locals():
                     repo.update_file(
                         path=file_path,
@@ -264,10 +278,11 @@ with st.form(key="feedback_form", clear_on_submit=True):
                         content=csv_content,
                         branch=branch
                     )
+
                 st.success(f"✅ Thank you, **{name}**! Your feedback has been recorded and saved to GitHub.")
                 st.balloons()
-                # Force refresh feedback table
-                st.rerun()
+                st.rerun()  # Auto-refresh to show new feedback immediately
+
             except Exception as e:
                 st.error(f"Error saving feedback to GitHub: {str(e)}")
                 st.info("Feedback could not be saved permanently.")
@@ -275,7 +290,7 @@ with st.form(key="feedback_form", clear_on_submit=True):
 st.markdown("</div>", unsafe_allow_html=True)
 
 # -----------------------------
-# Feedback Table (Realtime + Glass Effect)
+# Feedback Table
 # -----------------------------
 st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
 st.markdown("<h2 style='text-align: center; color: #34d399;'>📊 All Submitted Feedbacks</h2>", unsafe_allow_html=True)
@@ -311,8 +326,7 @@ st.markdown("""
             Deployment: Streamlit Cloud | Version 1.0 — December 2025
         </p>
         <p style='color: #64748b; font-size: 13px; margin-top: 15px;'>
-            **Feedback Persistence**: Feedbacks are now directly saved to your GitHub repository using the GitHub API. 
-            New entries will appear in <code>feedback.csv</code> on GitHub and in the app after refresh.
+            **Feedback Persistence**: Feedbacks are saved directly to GitHub. New entries appear instantly after submission.
         </p>
     </div>
 """, unsafe_allow_html=True)
