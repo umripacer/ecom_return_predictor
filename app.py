@@ -4,77 +4,7 @@ import joblib
 import os
 from datetime import datetime
 import time
-from github import Github  # PyGithub
-from streamlit_star_rating import st_star_rating
-
-# -----------------------------
-# Page Config & Dark Theme
-# -----------------------------
-st.set_page_config(
-    page_title="Return Risk Predictor",
-    layout="centered",
-    initial_sidebar_state="collapsed"
-)
-
-# Custom CSS - Supabase-inspired dark glassmorphism
-st.markdown("""
-<style>
-    .stApp {
-        background: linear-gradient(135deg, #0d1117, #161b22);
-        color: #c9d1d9;
-    }
-    h1, h2, h3 {
-        color: #58a6ff !important;
-        text-shadow: 0 2px 8px rgba(88, 166, 255, 0.3);
-    }
-    .glass-card {
-        background: rgba(13, 17, 23, 0.65);
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
-        border-radius: 16px;
-        border: 1px solid rgba(88, 166, 255, 0.2);
-        padding: 24px;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-        margin: 20px 0;
-    }
-    .stSelectbox > div > div, .stNumberInput > div, .stTextInput > div, .stTextArea > div {
-        background: rgba(22, 27, 34, 0.8);
-        border-radius: 12px;
-        border: 1px solid rgba(88, 166, 255, 0.3);
-    }
-    .stButton > button {
-        background: linear-gradient(90deg, #1f6feb, #58a6ff);
-        border: none;
-        border-radius: 12px;
-        font-weight: 600;
-        box-shadow: 0 4px 12px rgba(31, 111, 235, 0.4);
-        transition: all 0.3s;
-    }
-    .stButton > button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(31, 111, 235, 0.6);
-    }
-    .stMetric {
-        background: rgba(13, 17, 23, 0.7);
-        backdrop-filter: blur(10px);
-        border-radius: 12px;
-        padding: 12px;
-        border: 1px solid rgba(88, 166, 255, 0.2);
-    }
-    div[data-testid="stDataFrame"] {
-        background: rgba(22, 27, 34, 0.6);
-        backdrop-filter: blur(12px);
-        border: 1px solid rgba(88, 166, 255, 0.2);
-        border-radius: 16px;
-    }
-    .footer {
-        text-align: center;
-        color: #8b949e;
-        font-size: 14px;
-        margin-top: 50px;
-    }
-</style>
-""", unsafe_allow_html=True)
+from github import Github
 
 # -----------------------------
 # Load Model & Preprocessors
@@ -91,13 +21,78 @@ def load_artifacts():
 model, scaler, le_category, le_country = load_artifacts()
 
 # -----------------------------
-# Title
+# Page Config & Title
 # -----------------------------
+st.set_page_config(
+    page_title="Return Risk Predictor",
+    layout="centered",
+    initial_sidebar_state="collapsed",
+    page_icon="🛒"
+)
+
+# Custom CSS for Glassmorphism + Dark Theme + 3D Effects
 st.markdown("""
-    <div class="glass-card" style="text-align: center; padding: 40px;">
-        <h1 style="font-size: 48px; margin: 0;">🛒 E-Commerce Return Risk Predictor</h1>
-        <h3 style="margin: 10px 0 0; color: #8b949e;">Predict if a customer is likely to return their order</h3>
-    </div>
+    <style>
+        body {
+            background-color: #121212;
+            color: #E0E0E0;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        h1, h2, h3, h4, h5 {
+            color: #1ED760;
+        }
+        .glass-card {
+            backdrop-filter: blur(12px);
+            background: rgba(40, 40, 40, 0.6);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: transform 0.2s;
+        }
+        .glass-card:hover {
+            transform: translateY(-5px) scale(1.02);
+        }
+        .star-rating {
+            display: flex;
+            flex-direction: row-reverse;
+            justify-content: center;
+            gap: 5px;
+        }
+        .star-rating input {
+            display: none;
+        }
+        .star-rating label {
+            font-size: 2rem;
+            color: #555;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+        .star-rating input:checked ~ label,
+        .star-rating label:hover,
+        .star-rating label:hover ~ label {
+            color: #1ED760;
+            text-shadow: 0 0 8px #1ED760;
+        }
+        .dataframe-container {
+            backdrop-filter: blur(8px);
+            background: rgba(25,25,25,0.4);
+            border-radius: 15px;
+            padding: 10px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+    </style>
+""", unsafe_allow_html=True)
+
+# Title
+st.markdown("""
+    <h1 style='text-align: center; text-shadow: 2px 2px 6px rgba(0,0,0,0.4);'>
+        🛒 E-Commerce Product Return Risk Predictor
+    </h1>
+    <h3 style='text-align: center; color: #B0B0B0;'>
+        Predict if a customer is likely to return their order
+    </h3>
+    <hr style='border: 2px solid #1ED760; border-radius: 5px;'>
 """, unsafe_allow_html=True)
 
 # -----------------------------
@@ -113,9 +108,7 @@ MODEL_METRICS = {
 # -----------------------------
 # Prediction Section
 # -----------------------------
-st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
 st.header("📦 Enter Product & Order Details")
-
 col1, col2 = st.columns(2)
 with col1:
     category = st.selectbox("Product Category", options=le_category.classes_, index=0)
@@ -123,7 +116,6 @@ with col1:
     total_price = st.number_input("Approximate Total Order Value (£)", min_value=0.0, max_value=1000.0, value=50.0, step=5.0)
     customer_return_rate = st.slider("Customer's Past Return Rate (%)", 0.0, 20.0, 1.7,
                                      help="Historical return behavior of this customer")
-
 with col2:
     country = st.selectbox("Customer Country", options=le_country.classes_, index=0)
     month = st.selectbox("Month of Purchase", options=list(range(1, 13)),
@@ -132,7 +124,7 @@ with col2:
     is_weekend = st.checkbox("Weekend Order", value=False)
 
 if st.button("🔍 Predict Return Chance", type="primary", use_container_width=True):
-    with st.spinner("Analyzing order details..."):
+    with st.spinner("Analyzing order details and predicting risk..."):
         time.sleep(1.5)
         input_data = pd.DataFrame({
             'UnitPrice': [unit_price],
@@ -150,17 +142,11 @@ if st.button("🔍 Predict Return Chance", type="primary", use_container_width=T
         prediction = "Return Likely" if return_probability > 0.05 else "Return Unlikely"
 
     st.markdown("<br>", unsafe_allow_html=True)
-    risk_color = "#FF5252" if return_probability > 0.05 else "#4CAF50"
-    highlight_color = "#FFEB3B" if return_probability > 0.05 else "#FFFFFF"
-
     st.markdown(f"""
-        <div style='text-align: center; padding: 40px; border-radius: 20px;
-                    background: linear-gradient(135deg, {risk_color}aa, #0d1117);
-                    backdrop-filter: blur(12px); box-shadow: 0 12px 40px rgba(0,0,0,0.6);
-                    border: 1px solid {risk_color}44;'>
-            <h1 style='margin:0; font-size: 80px; color: white;'>{return_probability:.1%}</h1>
-            <h3 style='margin:10px 0; color: #c9d1d9;'>Probability of Return</h3>
-            <h2 style='margin:10px 0; color: {highlight_color};'>{prediction}</h2>
+        <div class='glass-card' style='text-align:center;'>
+            <h1 style='font-size: 60px; margin:0;'>{return_probability:.1%}</h1>
+            <h3 style='margin:5px 0;'>Probability of Return</h3>
+            <h2 style='margin:10px 0; color: {'#FFEB3B' if return_probability > 0.05 else '#1ED760'};'>{prediction}</h2>
         </div>
     """, unsafe_allow_html=True)
 
@@ -172,43 +158,46 @@ if st.button("🔍 Predict Return Chance", type="primary", use_container_width=T
         st.snow()
 
     if return_probability > 0.05:
-        st.warning("**Recommendation**: Enhance product photos, detailed sizing charts, or clear material description.")
+        st.warning("**Recommendation**: Enhance product photos, detailed sizing charts, or clear material description for this category.")
     else:
         st.success("**Great choice!** High customer satisfaction expected.")
 
-st.markdown("</div>", unsafe_allow_html=True)
-
-# Metrics Card
-st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
-st.markdown("<h4 style='text-align: center;'>🔬 Model Performance Metrics (Test Set)</h4>", unsafe_allow_html=True)
-c1, c2, c3, c4 = st.columns(4)
-c1.metric("Accuracy", MODEL_METRICS["Accuracy"])
-c2.metric("Precision (Returns)", MODEL_METRICS["Precision (Return Class)"])
-c3.metric("Recall (Returns)", MODEL_METRICS["Recall (Return Class)"])
-c4.metric("AUC Score", MODEL_METRICS["AUC Score"])
-st.markdown("</div>", unsafe_allow_html=True)
+    st.markdown("<br><h4 style='text-align: center;'>🔬 Model Performance Metrics (Test Set)</h4>", unsafe_allow_html=True)
+    colm1, colm2, colm3, colm4 = st.columns(4)
+    colm1.metric("Accuracy", MODEL_METRICS["Accuracy"])
+    colm2.metric("Precision (Returns)", MODEL_METRICS["Precision (Return Class)"])
+    colm3.metric("Recall (Returns)", MODEL_METRICS["Recall (Return Class)"])
+    colm4.metric("AUC Score", MODEL_METRICS["AUC Score"])
 
 # -----------------------------
-# Feedback Section
+# Feedback Section with Star Rating
 # -----------------------------
-st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
+st.markdown("<br><hr style='border-top: 3px dashed #1ED760;'>", unsafe_allow_html=True)
 st.markdown("<h2 style='text-align: center;'>📝 Give Your Feedback</h2>", unsafe_allow_html=True)
 st.write("Your feedback helps improve the model and user experience!")
 
+def star_rating_input(key):
+    st.markdown(f"""
+        <div class="star-rating" id="{key}">
+            <input type="radio" name="{key}" value="5" id="{key}-5"><label for="{key}-5">&#9733;</label>
+            <input type="radio" name="{key}" value="4" id="{key}-4"><label for="{key}-4">&#9733;</label>
+            <input type="radio" name="{key}" value="3" id="{key}-3"><label for="{key}-3">&#9733;</label>
+            <input type="radio" name="{key}" value="2" id="{key}-2"><label for="{key}-2">&#9733;</label>
+            <input type="radio" name="{key}" value="1" id="{key}-1"><label for="{key}-1">&#9733;</label>
+        </div>
+    """, unsafe_allow_html=True)
+    return st.session_state.get(key, 4)
+
 with st.form(key="feedback_form", clear_on_submit=True):
     name = st.text_input("Your Name *", placeholder="e.g., Umar Farooq")
-
     colf1, colf2 = st.columns(2)
     with colf1:
-        st.write("**Usability of the App**")
-        usability_rating = st_star_rating("Rate usability", maxValue=5, defaultValue=4, size=30)
+        st.markdown("**Usability of the App**")
+        usability_rating = st.slider(" ", 1, 5, 4)
     with colf2:
-        st.write("**Accuracy & Relevance of Prediction**")
-        accuracy_relevance = st_star_rating("Rate accuracy", maxValue=5, defaultValue=4, size=30)
-
-    suggestions = st.text_area("Suggestions for Improvement",
-                               placeholder="e.g., Add product images, allow bulk upload, show explanations, etc.")
-
+        st.markdown("**Accuracy & Relevance of Prediction**")
+        accuracy_relevance = st.slider(" ", 1, 5, 4)
+    suggestions = st.text_area("Suggestions for Improvement", placeholder="e.g., Add product images, allow bulk upload, show explanations, etc.")
     submitted = st.form_submit_button("🚀 Submit Feedback", type="primary", use_container_width=True)
 
     if submitted:
@@ -227,7 +216,6 @@ with st.form(key="feedback_form", clear_on_submit=True):
                 repo = g.get_repo(f"{st.secrets['GITHUB_USERNAME']}/{st.secrets['REPO_NAME']}")
                 file_path = "feedback.csv"
                 branch = st.secrets.get("BRANCH", "main")
-
                 try:
                     contents = repo.get_contents(file_path, ref=branch)
                     raw_url = f"https://raw.githubusercontent.com/{st.secrets['GITHUB_USERNAME']}/{st.secrets['REPO_NAME']}/{branch}/{file_path}"
@@ -235,43 +223,42 @@ with st.form(key="feedback_form", clear_on_submit=True):
                     df_updated = pd.concat([df_existing, pd.DataFrame([feedback_entry])], ignore_index=True)
                 except:
                     df_updated = pd.DataFrame([feedback_entry])
-
                 csv_content = df_updated.to_csv(index=False)
-
                 if 'contents' in locals():
-                    repo.update_file(path=file_path, message=f"Feedback from {name}", content=csv_content, sha=contents.sha, branch=branch)
+                    repo.update_file(
+                        path=file_path,
+                        message=f"New feedback from {name}",
+                        content=csv_content,
+                        sha=contents.sha,
+                        branch=branch
+                    )
                 else:
-                    repo.create_file(path=file_path, message=f"Initial feedback from {name}", content=csv_content, branch=branch)
-
-                st.success(f"✅ Thank you, **{name}**! Your feedback has been saved.")
+                    repo.create_file(
+                        path=file_path,
+                        message=f"Initial feedback from {name}",
+                        content=csv_content,
+                        branch=branch
+                    )
+                st.success(f"✅ Thank you, **{name}**! Your feedback has been recorded and saved to GitHub.")
                 st.balloons()
+                st.experimental_rerun()
             except Exception as e:
-                st.error(f"Error saving feedback: {str(e)}")
-
-st.markdown("</div>", unsafe_allow_html=True)
+                st.error(f"Error saving feedback to GitHub: {str(e)}")
+                st.info("Feedback could not be saved permanently.")
 
 # -----------------------------
-# Feedback Table with Auto-Refresh
+# Feedback Table (Realtime + Glass)
 # -----------------------------
-st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
+st.markdown("<br><hr style='border-top: 3px dashed #1ED760;'>", unsafe_allow_html=True)
 st.markdown("<h2 style='text-align: center;'>📊 All Submitted Feedbacks</h2>", unsafe_allow_html=True)
-
-# Session state for refresh control
-if 'last_refresh' not in st.session_state:
-    st.session_state.last_refresh = datetime.now()
-
-# Auto-refresh every 15 seconds
-time_since_refresh = (datetime.now() - st.session_state.last_refresh).seconds
-if time_since_refresh > 15:
-    st.rerun()
 
 try:
     branch = st.secrets.get("BRANCH", "main")
     feedback_url = f"https://raw.githubusercontent.com/{st.secrets['GITHUB_USERNAME']}/{st.secrets['REPO_NAME']}/{branch}/feedback.csv"
     df_feedback = pd.read_csv(feedback_url)
-    
-    st.dataframe(df_feedback, use_container_width=True, hide_index=True)
-    
+    st.markdown("<div class='dataframe-container'>", unsafe_allow_html=True)
+    st.dataframe(df_feedback, use_container_width=True)
+    st.markdown("</div>", unsafe_allow_html=True)
     csv_data = df_feedback.to_csv(index=False).encode('utf-8')
     st.download_button(
         label="📥 Download Feedbacks as CSV",
@@ -280,25 +267,18 @@ try:
         mime="text/csv",
         use_container_width=True
     )
-    
-    # Update last refresh time only on successful load
-    st.session_state.last_refresh = datetime.now()
-
-except:
-    st.info("No feedback submitted yet or loading...")
-
-st.markdown("</div>", unsafe_allow_html=True)
+except Exception as e:
+    st.info("No feedback submitted yet or unable to load from GitHub.")
 
 # -----------------------------
 # Footer
 # -----------------------------
+st.markdown("<br><hr>", unsafe_allow_html=True)
 st.markdown("""
-    <div class="footer glass-card">
+    <p style='text-align: center; color: #AAA; font-size: 14px;'>
         <strong>Data Science Assignment 4</strong> | BSCS-F22 | Instructor: Ghulam Ali<br>
         Model: XGBoost Classifier | Dataset: Online Retail (UCI/Kaggle)<br>
         Deployment: Streamlit Cloud | Version 1.0 — December 2025
-    </div>
-    <p style="text-align: center; color: #58a6ff; margin-top: 20px;">
-        ⭐ Feedback saved to GitHub • Real-time updates • Glassmorphic Dark Theme
     </p>
 """, unsafe_allow_html=True)
+st.caption("**Feedback Persistence**: Feedbacks are now directly saved to your GitHub repository using the GitHub API. New entries will appear in `feedback.csv` on GitHub and in the app after refresh.")
